@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -23,6 +25,37 @@ mail=Mail()
 
 
 
+def _create_initial_admin():
+    """Create the first admin account from environment variables.
+
+    Used on deployment (e.g. Render): set ADMIN_USERNAME, ADMIN_EMAIL and
+    ADMIN_PASSWORD in the environment and the account is created automatically
+    on startup if it doesn't exist yet. If any variable is missing, this
+    silently does nothing.
+    """
+    from flaskblog.models import User
+
+    username = os.environ.get('ADMIN_USERNAME')
+    email = os.environ.get('ADMIN_EMAIL')
+    password = os.environ.get('ADMIN_PASSWORD')
+
+    if not (username and email and password):
+        return
+
+    existing = User.query.filter(
+        (User.username == username) | (User.email == email)
+    ).first()
+    if existing:
+        return
+
+    admin = User(username=username, email=email,
+                 password=bcrypt.generate_password_hash(password).decode('utf-8'),
+                 is_admin=True)
+    db.session.add(admin)
+    db.session.commit()
+    print(f'[BlogSpace] Created initial admin account: {username} <{email}>')
+
+
 def create_app(config_class=Config):
     app=Flask(__name__)
     app.config.from_object(config_class)
@@ -37,13 +70,16 @@ def create_app(config_class=Config):
     from flaskblog.posts.routes import posts
     from flaskblog.main.routes import main
     from flaskblog.errors.handlers import errors
+    from flaskblog.admin import admin
 
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
     app.register_blueprint(errors)
+    app.register_blueprint(admin)
 
     with app.app_context():
         db.create_all() # creates the database tables automatically if they don't exist yet (fresh/empty database)
+        _create_initial_admin()
 
     return app

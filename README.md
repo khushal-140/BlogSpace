@@ -39,6 +39,33 @@ BlogSpace/
     └── errors/             # Error handlers
 ```
 
+## Environment Variables
+
+All configuration is read from environment variables (see `flaskblog/config.py`). Local development works with defaults; in production always set these.
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `SECRET_KEY` | Session/CSRF signing key | dev fallback (**set in production!**) |
+| `DATABASE_URL` | Database connection | `sqlite:///site.db` |
+| `FLASK_DEBUG` | `1` = debugger + auto-reload (development only) | `0` |
+| `ADMIN_USERNAME` | First admin account, auto-created on startup | — |
+| `ADMIN_EMAIL` | Email of the first admin | — |
+| `ADMIN_PASSWORD` | Password of the first admin | — |
+| `MAIL_SERVER` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` | SMTP settings for password-reset emails | Gmail defaults |
+
+The admin account is created automatically on startup when all three `ADMIN_*` variables are set and no user with that username/email exists. You can also create admins manually with `python create_admin.py`.
+
+## Deploy on Render
+
+1. Push the repository to GitHub (Render watches the repo).
+2. Create a **Python Web Service** connected to this repo:
+   - **Build command:** `pip install -r requirements.txt`
+   - **Start command:** `gunicorn run:app`
+3. Add the environment variables: `SECRET_KEY`, `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (and optionally the `MAIL_*` ones).
+4. Deploy. On startup the app creates its database and the first admin account automatically.
+
+> Note: on the free plan Render's disk is temporary — the SQLite database resets on every deploy/restart. The admin account is re-created from the env vars on each start, so you can always log in.
+
 ## Run Locally
 
 ```bash
@@ -50,9 +77,9 @@ source venv/bin/activate     # Linux / Mac
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. (Optional) set environment variables
-set SECRET_KEY=your-random-secret     # Windows
-export SECRET_KEY=your-random-secret  # Linux / Mac
+# 3. (Optional) enable the debugger / auto-reload
+set FLASK_DEBUG=1            # Windows
+export FLASK_DEBUG=1         # Linux / Mac
 
 # 4. Start the app -- the database is created automatically
 python run.py
