@@ -25,25 +25,25 @@ mail=Mail()
 
 def create_app(config_class=Config):
     app=Flask(__name__)
-    app.config.from_object(Config)
-    
+    app.config.from_object(config_class)
+
     db.init_app(app)
     bcrypt.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
-    
+
     from flaskblog.users.routes import users
     from flaskblog.posts.routes import posts
     from flaskblog.main.routes import main
     from flaskblog.errors.handlers import errors
-    from flaskblog.admin import admin
-    
+
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
     app.register_blueprint(errors)
-    app.register_blueprint(admin)
-    
-    
+
+    with app.app_context():
+        db.create_all() # creates the database tables automatically if they don't exist yet (fresh/empty database)
+
     return app

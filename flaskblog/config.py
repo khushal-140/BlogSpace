@@ -1,10 +1,15 @@
+import os
 
 
 class Config:
-    SECRET_KEY = '454454654ac4545454'# This is used to protect against CSRF (Cross-Site Request Forgery) attacks. It is a random string that should be kept secret in a production environment. In this example, it's just a placeholder value for demonstration purposes.
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///site.db' # This configures the database URI for SQLAlchemy. In this case, it specifies that we are using SQLite and the database file is named site.db. The triple slashes indicate a relative path to the database file.
-    MAIL_SERVER='smtp.gamil.com'
-    MAIL_PORT=587
-    MAIL_USE_TLS=True 
-    MAIL_USERNAME='khushalbharat0@gmail.com'
-    MAIL_PASSWORD='djdon'
+    # Keep secrets out of source code -- set these as environment variables
+    # locally or on Render. The fallbacks are for local development only.
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///site.db')
+
+    # Mail settings (used for password reset emails)
+    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'True') == 'True'
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
