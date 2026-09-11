@@ -12,10 +12,12 @@ class User(db.Model, UserMixin):
     id=db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String(20), unique=True, nullable=False)
     email=db.Column(db.String(120), unique=True, nullable=False)
-    image=db.Column(db.String(20), nullable=False, default='default.jpg')
+    image=db.Column(db.String(50), nullable=False, default='default.jpg')
     password=db.Column(db.String(60), nullable=False)
     posts=db.relationship('Post', backref='author', lazy=True) # This line defines a relationship between the User model and the Post model. It indicates that a user can have multiple posts. The backref parameter creates a virtual column in the Post model called 'author' that allows us to access the user who created a post. The lazy=True parameter means that the related posts will be loaded from the database only when they are accessed, rather than being loaded immediately when the user is queried.
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
+    profession = db.Column(db.String(80), nullable=True) # short label shown on author cards, e.g. 'Product Designer'
+    bio = db.Column(db.Text, nullable=True) # longer author description shown on their profile / author cards
     
     ''''
     @staticmethod
@@ -56,6 +58,24 @@ class Post(db.Model):
     date_posted=db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     content=db.Column(db.Text, nullable=False)
     user_id=db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    category=db.Column(db.String(50), nullable=False, default='General')
+    is_featured=db.Column(db.Boolean, nullable=False, default=False)
+
+    @property
+    def excerpt(self):
+        """Short preview of the post for blog cards on the home page."""
+        first_paragraph = self.content.strip().split('\n')[0]
+        return first_paragraph[:180].rsplit(' ', 1)[0] + '...'
+
+    @property
+    def read_time(self):
+        """Estimated reading time in minutes (about 200 words per minute)."""
+        return max(1, round(len(self.content.split()) / 200))
+
+    @property
+    def cover_image(self):
+        """Deterministic cover image based on the category of the post."""
+        return f'covers/{self.category.lower()}_{(self.id % 2) + 1}.jpg'
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"

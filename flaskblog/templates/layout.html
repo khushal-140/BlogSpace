@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     {% if title %}
-      <title>{{ title }}</title>
+      <title>{{ title }} | BlogSpace</title>
     {% else %}
-      <title>Home Page</title>
+      <title>BlogSpace - Stories Worth Reading</title>
     {% endif %}
   </head>
   <body>
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="/">🚀 BlogSpace</a>
+          <a class="navbar-brand mr-4" href="{{ url_for('main.home') }}">🚀 BlogSpace</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
@@ -34,39 +37,28 @@
                 <a class="nav-item nav-link" href="{{ url_for('users.logout') }}">Logout</a>
               {% else %}
                 <a class="nav-item nav-link" href="{{ url_for('users.login') }}">Login</a>
-                <a class="nav-item nav-link" href="{{ url_for('users.register') }}">Register</a>
+                <a class="nav-item nav-link nav-cta" href="{{ url_for('users.register') }}">Join free</a>
               {% endif %}
             </div>
           </div>
         </div>
       </nav>
     </header>
-    <main role="main" class="container">
-      <div class="row">
-        <div class="col-md-8">
-          {% with messages=get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-              {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-              {% endfor %}
-            {% endif %}
-          {% endwith %}
-          {% block content %}
-          {% endblock %}
-        </div>
-        <div class="col-md-4">
-          <div class="content-section">
-            <!-- 
-        <h3>Developer Hub</h3>
-        <p class='text-muted'>You can put any information here you'd like.</p>
-          <ul class="list-group">
-            <li class="list-group-item list-group-item-light">Latest Posts</li>
-            <li class="list-group-item list-group-item-light">Announcements</li>
-            <li class="list-group-item list-group-item-light">Calendars</li>
-            <li class="list-group-item list-group-item-light">etc</li>
-          </ul>
-        </p>
-       -->
+    <main role="main" class="container main-container">
+      {% with messages=get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% if not full_width %}<div class="row"><div class="col-lg-8">{% endif %}
+        {% block content %}{% endblock %}
+      {% if not full_width %}
+      </div>
+        <div class="col-lg-4">
+          <div class="content-section sidebar-card">
             <h3>Popular Categories</h3>
             <ul class="list-group">
               <li class="list-group-item">🌍 Travel</li>
@@ -78,7 +70,15 @@
           </div>
         </div>
       </div>
+      {% endif %}
     </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <span>🚀 BlogSpace</span>
+        <span class="text-muted">Stories worth reading - built with Python Flask</span>
+      </div>
+    </footer>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

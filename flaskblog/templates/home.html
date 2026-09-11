@@ -1,36 +1,143 @@
 {% extends 'layout.html' %}
+{% set full_width = true %}
 
 {% block content %}
-  <h2>Welcome to BlogSpace</h2>
-  <p>A place where stories, experiences, ideas, and knowledge come together. Share your journey, inspire others, and discover perspectives from people around the world.</p>
-  {% for post in posts.items %}
-    <!--          the learing why watching video is importent for learning flask and python
-        <h1>{{post.title}}</h1>
-        <p>By {{post.author}} on {{post.date_posted}}</p>
-        <p>{{post.content}}</p>
-             -->
 
-    <article class="media content-section">
-      <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" />
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a>
-          <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
-        </div>
-        <h2><a class="article-title" href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
-        <p class="article-content">{{ post.content }}</p>
+  {% if posts.page == 1 %}
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-text">
+      <span class="hero-eyebrow">Welcome to BlogSpace</span>
+      <h1 class="hero-title">Stories worth reading,<br/>written by real people.</h1>
+      <p class="hero-sub">
+        Practical articles on technology, travel, money, health and everything in between -
+        shared by our community of {{ total_users }} writers.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg btn-gradient" href="#recent">Start reading</a>
+        {% if not current_user.is_authenticated %}
+          <a class="btn btn-outline-light btn-lg" href="{{ url_for('users.register') }}">Join free</a>
+        {% else %}
+          <a class="btn btn-outline-light btn-lg" href="{{ url_for('posts.new_post') }}">Write a post</a>
+        {% endif %}
       </div>
-    </article>
-  {% endfor %}
-  {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-    {% if page_num %}
-      {% if posts.page == page_num %}
-        <a class="btn btn-info mb-10" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
-      {% else %}
-        <a class="btn btn-outline-info mb-10" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
-      {% endif %}
-    {% else %}
-      ...
+      <div class="hero-stats">
+        <div><strong>{{ total_posts }}</strong><span>articles</span></div>
+        <div><strong>{{ total_users }}</strong><span>writers</span></div>
+        <div><strong>{{ total_categories }}</strong><span>categories</span></div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if posts.page == 1 and featured %}
+  <!-- Featured posts -->
+  <section class="home-section">
+    <div class="section-heading">
+      <h2>⭐ Featured this week</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="row">
+      {% for post in featured %}
+      <div class="col-md-4 mb-4">
+        <article class="blog-card featured-card">
+          <a href="{{ url_for('posts.post', post_id=post.id) }}">
+            <img class="card-cover" src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}" />
+          </a>
+          <div class="card-body">
+            <span class="badge badge-category">⭐ {{ post.category }}</span>
+            <h3 class="card-title"><a href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h3>
+            <p class="card-excerpt">{{ post.excerpt }}</p>
+            <div class="card-meta">
+              <img class="avatar-xs rounded-circle" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" alt="{{ post.author.username }}" />
+              <a class="meta-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a>
+              <span class="meta-dot">•</span>
+              <span>{{ post.date_posted.strftime('%b %d') }}</span>
+            </div>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Recent posts -->
+  <section class="home-section" id="recent">
+    <div class="section-heading">
+      <h2>🕒 Recent blogs</h2>
+      <span class="section-line"></span>
+    </div>
+
+    <div class="row">
+      {% for post in posts.items %}
+      <div class="col-md-6 mb-4">
+        <article class="blog-card">
+          <a href="{{ url_for('posts.post', post_id=post.id) }}">
+            <img class="card-cover" src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}" />
+          </a>
+          <div class="card-body">
+            <span class="badge badge-category">{{ post.category }}</span>
+            <h3 class="card-title"><a href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h3>
+            <p class="card-excerpt">{{ post.excerpt }}</p>
+            <div class="card-meta">
+              <img class="avatar-xs rounded-circle" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" alt="{{ post.author.username }}" />
+              <a class="meta-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a>
+              <span class="meta-dot">•</span>
+              <span>{{ post.date_posted.strftime('%b %d, %Y') }}</span>
+              <span class="meta-dot">•</span>
+              <span>{{ post.read_time }} min read</span>
+            </div>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if posts.has_prev or posts.has_next %}
+    <nav>
+      <ul class="pagination pagination-modern justify-content-center">
+        <li class="page-item {{ 'disabled' if not posts.has_prev }}">
+          <a class="page-link" href="{{ url_for('main.home', page=posts.prev_num) if posts.has_prev else '#' }}">←</a>
+        </li>
+        {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+          {% if page_num %}
+            <li class="page-item {{ 'active' if posts.page == page_num }}">
+              <a class="page-link" href="{{ url_for('main.home', page=page_num) }}">{{ page_num }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {{ 'disabled' if not posts.has_next }}">
+          <a class="page-link" href="{{ url_for('main.home', page=posts.next_num) if posts.has_next else '#' }}">→</a>
+        </li>
+      </ul>
+    </nav>
     {% endif %}
-  {% endfor %}
+  </section>
+
+  {% if posts.page == 1 and popular_authors %}
+  <!-- Popular authors -->
+  <section class="home-section">
+    <div class="section-heading">
+      <h2>✍️ Popular authors</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="row">
+      {% for author, post_count in popular_authors %}
+      <div class="col-md-3 col-6 mb-4">
+        <div class="author-card text-center">
+          <img class="avatar-lg rounded-circle" src="{{ url_for('static', filename='profile_pics/' + author.image) }}" alt="{{ author.username }}" />
+          <h4><a href="{{ url_for('users.user_posts', username=author.username) }}">{{ author.username }}</a></h4>
+          <p class="author-role">{{ author.profession }}</p>
+          <p class="author-posts">{{ post_count }} article{{ 's' if post_count != 1 }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
 {% endblock %}

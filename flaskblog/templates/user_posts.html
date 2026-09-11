@@ -1,35 +1,52 @@
 {% extends 'layout.html' %}
 {% block content %}
-    <h1 class="mb-3">Posts By {{user.username}} ({{posts.total}})</h1>
-    
-  {% for post in posts.items %}
-    <!--        the learing why watching video is importent for learning flask and python
-        <h1>{{post.title}}</h1>
-        <p>By {{post.author}} on {{post.date_posted}}</p>
-        <p>{{post.content}}</p>
-           -->
-        
-    <article class="media content-section">
-      <img class="rounded-circle article-img"  src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" />
-      <div class="media-body">
-        <div class="article-metadata">
-          <a class="mr-2" href="{{ url_for('users.user_posts',username=post.author.username)}}">{{ post.author.username }}</a>
-          <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
+
+  <div class="content-section author-header">
+    <img class="avatar-xl rounded-circle" src="{{ url_for('static', filename='profile_pics/' + user.image) }}" alt="{{ user.username }}" />
+    <div class="ml-3">
+      <h1 class="mb-1">{{ user.username }}</h1>
+      {% if user.profession %}<p class="author-role mb-1">{{ user.profession }}</p>{% endif %}
+      {% if user.bio %}<p class="text-muted mb-2">{{ user.bio }}</p>{% endif %}
+      <span class="badge badge-pill badge-light">{{ posts.total }} article{{ 's' if posts.total != 1 }}</span>
+    </div>
+  </div>
+
+  <div class="row">
+    {% for post in posts.items %}
+    <div class="col-md-6 mb-4">
+      <article class="blog-card">
+        <a href="{{ url_for('posts.post', post_id=post.id) }}">
+          <img class="card-cover" src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}" />
+        </a>
+        <div class="card-body">
+          <span class="badge badge-category">{{ post.category }}</span>
+          <h3 class="card-title"><a href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h3>
+          <p class="card-excerpt">{{ post.excerpt }}</p>
+          <div class="card-meta">
+            <span>{{ post.date_posted.strftime('%b %d, %Y') }}</span>
+            <span class="meta-dot">•</span>
+            <span>{{ post.read_time }} min read</span>
+          </div>
         </div>
-        <h2><a class="article-title" href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
-        <p class="article-content">{{ post.content }}</p>
-      </div>
-    </article>
-  {% endfor %}
+      </article>
+    </div>
+    {% endfor %}
+  </div>
+
   {% for page_num in posts.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if loop.first %}
+    <nav><ul class="pagination pagination-modern justify-content-center">
+    {% endif %}
     {% if page_num %}
-      {% if posts.page == page_num %}
-        <a class="btn btn-info mb-10" href="{{ url_for('users.user_posts', username=user.username , page=page_num) }}">{{ page_num }}</a>
-      {% else %}
-        <a class="btn btn-outline-info mb-10" href="{{ url_for('users.user_posts', username=user.username,page=page_num) }}">{{ page_num }}</a>
-      {% endif %}
+      <li class="page-item {{ 'active' if posts.page == page_num }}">
+        <a class="page-link" href="{{ url_for('users.user_posts', username=user.username, page=page_num) }}">{{ page_num }}</a>
+      </li>
     {% else %}
-      ...
+      <li class="page-item disabled"><span class="page-link">…</span></li>
+    {% endif %}
+    {% if loop.last %}
+    </ul></nav>
     {% endif %}
   {% endfor %}
+
 {% endblock %}

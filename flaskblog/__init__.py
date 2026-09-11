@@ -81,5 +81,11 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all() # creates the database tables automatically if they don't exist yet (fresh/empty database)
         _create_initial_admin()
+        # Auto-seed demo content on an empty database, so a fresh deployment
+        # (e.g. Render) immediately shows a lively blog. Set SEED_DEMO_DATA=0
+        # to disable this behaviour.
+        if os.environ.get('SEED_DEMO_DATA', '1') == '1':
+            from flaskblog.seed_data import populate_demo_data
+            populate_demo_data()
 
     return app

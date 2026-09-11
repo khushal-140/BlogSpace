@@ -1,20 +1,42 @@
 {% extends 'layout.html' %}
 {% block content %}
-  <article class="media content-section">
-    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" />
-    <div class="media-body">
-      <div class="article-metadata">
-        <a class="mr-2" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a>
-        <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
-        {% if post.author == current_user %}
-          <div>
-            <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('posts.update_post', post_id=post.id) }}">Update</a>
-            <button type="button" class="btn btn-danger btn-sm mt-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
-          </div>
-        {% endif %}
+  <article class="post-full">
+    <img class="post-cover" src="{{ url_for('static', filename=post.cover_image) }}" alt="{{ post.title }}" />
+
+    <div class="content-section post-body-card">
+      <span class="badge badge-category">{{ post.category }}</span>
+      <h1 class="post-title">{{ post.title }}</h1>
+
+      <div class="post-byline">
+        <img class="avatar-sm rounded-circle" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" alt="{{ post.author.username }}" />
+        <div>
+          <a class="meta-author" href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a>
+          {% if post.author.profession %}<small class="text-muted d-block">{{ post.author.profession }}</small>{% endif %}
+        </div>
+        <div class="ml-auto text-right">
+          <small class="text-muted d-block">{{ post.date_posted.strftime('%B %d, %Y') }}</small>
+          <small class="text-muted">{{ post.read_time }} min read</small>
+        </div>
       </div>
-      <h2 class="article-title">{{ post.title }}</h2>
-      <p class="article-content">{{ post.content }}</p>
+
+      {% if post.author == current_user %}
+        <div class="post-owner-actions">
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('posts.update_post', post_id=post.id) }}">Update</a>
+          <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#deleteModal">Delete</button>
+        </div>
+      {% endif %}
+
+      <div class="post-body">{{ post.content }}</div>
+
+      {% if post.author.bio %}
+      <div class="author-box">
+        <img class="avatar-sm rounded-circle" src="{{ url_for('static', filename='profile_pics/' + post.author.image) }}" alt="{{ post.author.username }}" />
+        <div>
+          <strong>Written by <a href="{{ url_for('users.user_posts', username=post.author.username) }}">{{ post.author.username }}</a></strong>
+          <p class="mb-0 text-muted">{{ post.author.bio }}</p>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </article>
 
@@ -26,10 +48,9 @@
           <h5 class="modal-title" id="deleteModalLabel">Delete Post</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         </div>
-
+        <div class="modal-body">Are you sure you want to delete this post? This cannot be undone.</div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-
           <form action="{{ url_for('posts.delete_post', post_id=post.id) }}" method="POST">
             <button type="submit" class="btn btn-danger">Delete</button>
           </form>
