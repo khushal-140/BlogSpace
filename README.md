@@ -66,14 +66,6 @@ The admin account is created automatically on startup when all three `ADMIN_*` v
 
 > Note: on the free plan Render's disk is temporary — the SQLite database resets on every deploy/restart. The admin account is re-created from the env vars on each start, so you can always log in.
 
-## Demo Content
-
-The repository ships with realistic demo data: 14 writers and 38 articles across
-10 categories, with generated profile avatars and cover images.
-
-- Every demo account's password is **`demo1234`** (e.g. `sophia_reyes`, `maya_chen`, `david_kim`...)
-- The admin account stays `admin` / `khushalbharat0@gmail.com`
-- `flaskblog/seed_data.py` holds the demo content; `generate_assets.py` regenerates the images
 
 Seed manually at any time:
 
